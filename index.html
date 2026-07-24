@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>アイスランド旅行フォトマップ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="title-group">
+      <span class="flag">🇮🇸</span>
+      <div>
+        <h1>Iceland Trip</h1>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+  <div id="map-wrap">
+    <div id="map"></div>
+    <button id="legend-toggle" aria-label="ルート凡例を切り替え">
+      <span class="dot-stack"><span></span><span></span><span></span></span>
+      ルート
+    </button>
+    <div id="legend">
+      <div class="legend-title">日付ごとの移動ルート</div>
+    </div>
+  </div>
+  <div id="sidebar">
+    <h2>写真</h2>
+    <div id="sidebar-list"></div>
+  </div>
+</div>
+
+<div id="lightbox">
+  <button class="close-btn" id="lightbox-close" aria-label="閉じる">✕</button>
+  <button class="nav-btn prev" id="lightbox-prev" aria-label="前へ">‹</button>
+  <button class="nav-btn next" id="lightbox-next" aria-label="次へ">›</button>
+  <div class="lightbox-frame">
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+  <div class="caption">
+    <div class="counter" id="lightbox-counter"></div>
+    <div class="title" id="lightbox-title"></div>
+    <div class="date" id="lightbox-date"></div>
+    <div class="note" id="lightbox-note"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data.js"></script>
+<script src="routes.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
