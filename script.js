@@ -164,8 +164,12 @@ ordered.forEach((p, i) => {
       <div class="date">${p.date}</div>
     </div>
   `;
-  // 一覧をクリックしたら、その写真をライトボックスで拡大表示（全写真をめくれる）
-  card.addEventListener("click", () => openLightbox(p.id, ordered));
+  // 一覧をクリックしたら、地図をその写真の撮影地点へズーム移動しつつ、
+  // ライトボックスで拡大表示する（拡大を閉じると地図はその地点に寄った状態になる）
+  card.addEventListener("click", () => {
+    map.setView([p.lat, p.lng], Math.max(map.getZoom(), 12), { animate: false });
+    openLightbox(p.id, ordered);
+  });
   list.appendChild(card);
 });
 
@@ -190,10 +194,30 @@ const lightboxCounter = document.getElementById("lightbox-counter");
 let lightboxList = ordered;
 let lightboxPos = 0;
 
+// スマホでは操作ボタン（前後・閉じる）を一定時間で自動的に隠し、写真タップで再表示する。
+// PC（マウス）では常に表示（ボタンは画像の外側にあり邪魔にならないため）。
+const isMobileView = () => window.matchMedia("(max-width: 780px)").matches;
+let controlsTimer = null;
+function scheduleHideControls() {
+  clearTimeout(controlsTimer);
+  if (isMobileView()) {
+    controlsTimer = setTimeout(() => lightbox.classList.add("hide-controls"), 2500);
+  }
+}
+function showControls() {
+  lightbox.classList.remove("hide-controls");
+  scheduleHideControls();
+}
+function closeLightbox() {
+  lightbox.classList.remove("open", "hide-controls");
+  clearTimeout(controlsTimer);
+}
+
 function openLightbox(id, listOverride) {
   lightboxList = (listOverride && listOverride.length) ? listOverride : ordered;
   const pos = lightboxList.findIndex(p => p.id === id);
   showLightbox(pos < 0 ? 0 : pos);
+  showControls(); // 開いた直後はボタンを表示し、数秒後に自動で隠す
 }
 
 function showLightbox(pos) {
@@ -209,24 +233,48 @@ function showLightbox(pos) {
   highlightCard(p.id);
 }
 
-document.getElementById("lightbox-close").addEventListener("click", () => {
-  lightbox.classList.remove("open");
-});
+document.getElementById("lightbox-close").addEventListener("click", closeLightbox);
 lightbox.addEventListener("click", (e) => {
-  if (e.target === lightbox) lightbox.classList.remove("open");
+  if (e.target === lightbox) closeLightbox();
 });
 document.getElementById("lightbox-prev").addEventListener("click", () => {
   showLightbox(lightboxPos - 1);
+  showControls();
 });
 document.getElementById("lightbox-next").addEventListener("click", () => {
   showLightbox(lightboxPos + 1);
+  showControls();
 });
+// 写真をタップしたら操作ボタンを再表示（スマホ向け）
+lightboxImg.addEventListener("click", showControls);
 document.addEventListener("keydown", (e) => {
   if (!lightbox.classList.contains("open")) return;
-  if (e.key === "Escape") lightbox.classList.remove("open");
+  if (e.key === "Escape") closeLightbox();
   if (e.key === "ArrowLeft") showLightbox(lightboxPos - 1);
   if (e.key === "ArrowRight") showLightbox(lightboxPos + 1);
 });
+
+// スワイプで前後移動（スマホ向け）。左スワイプで次へ、右スワイプで前へ。
+let swipeStartX = 0, swipeStartY = 0, swipeActive = false;
+lightbox.addEventListener("touchstart", (e) => {
+  if (e.touches.length !== 1) return;
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+  swipeActive = true;
+}, { passive: true });
+lightbox.addEventListener("touchend", (e) => {
+  if (!swipeActive) return;
+  swipeActive = false;
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  const dy = e.changedTouches[0].clientY - swipeStartY;
+  // 横方向に十分動き、かつ縦より横の動きが大きいときだけページ送り
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+    showLightbox(lightboxPos + (dx < 0 ? 1 : -1));
+  } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+    // ほぼ動いていない＝タップ: 隠れている操作ボタンを再表示
+    showControls();
+  }
+}, { passive: true });
 
 // 全ピン・ルートが収まるようにフィット
 // （レイアウト確定前にfitBoundsするとコンテナサイズを誤認するため、少し遅らせて実行）
