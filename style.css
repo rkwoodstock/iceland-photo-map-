@@ -305,7 +305,9 @@ header p {
   cursor: pointer;
 }
 .photo-pin img {
-  width: 100%;
+  /* Leaflet の .leaflet-marker-pane img { width:auto } が縦型画像で効いて
+     右側に余白が出るため、!important で確実に枠いっぱいに広げる */
+  width: 100% !important;
   height: 100%;
   object-fit: cover;
   display: block;
