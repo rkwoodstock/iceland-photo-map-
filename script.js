@@ -188,7 +188,9 @@ const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxTitle = document.getElementById("lightbox-title");
 const lightboxDate = document.getElementById("lightbox-date");
-const lightboxNote = document.getElementById("lightbox-note");
+const lightboxGear = document.getElementById("lightbox-gear");
+const lightboxExif = document.getElementById("lightbox-exif");
+const lightboxComment = document.getElementById("lightbox-comment");
 const lightboxCounter = document.getElementById("lightbox-counter");
 
 let lightboxList = ordered;
@@ -227,7 +229,9 @@ function showLightbox(pos) {
   lightboxImg.src = p.file;
   lightboxTitle.textContent = p.title;
   lightboxDate.textContent = p.date;
-  lightboxNote.textContent = p.note || "";
+  lightboxGear.textContent = [p.camera, p.lens].filter(Boolean).join(" · ");
+  lightboxExif.textContent = p.exif || "";
+  lightboxComment.textContent = p.desc || "";
   lightboxCounter.textContent = n > 1 ? `${lightboxPos + 1} / ${n}` : "";
   lightbox.classList.add("open");
   highlightCard(p.id);
